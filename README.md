@@ -16,3 +16,13 @@ A rake task is provided to reset the application to your application such as ren
 application module, changing the database names, resetting the git repository to a new state, and resetting the README.md if you want.
 
 Usage: `rake template:reset`
+
+## Removing database support
+
+If your application does not need a database, you can remove the need for a database (and thus simplify deployment), by running the following commands (note, this should be run _after_ `rake template:reset`):
+
+```bash
+rake template:remove_database_support
+
+bundle
+```

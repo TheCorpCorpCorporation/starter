@@ -1,6 +1,7 @@
 require "active_support"
 
 namespace :template do
+  desc "Reset the template as a new Rails app"
   task :reset do
     # Remove the .git directory
     puts "Removing .git directory to give you a fresh git repository..."
@@ -53,4 +54,58 @@ namespace :template do
       puts "Skipped generating README.md."
     end
   end
+
+  desc "Drop database support in the existing project"
+  task :remove_database_support => :environment do
+    # Step 1: Remove ActiveRecord gem from Gemfile
+    gsub_file 'Gemfile', /^gem ['"]pg['"].*$/, '# \0'
+    gsub_file 'Gemfile', /^gem ['"]sqlite3['"].*$/, '# \0'
+
+    # Step 2: Comment out ActiveRecord related configurations in environment files
+    Dir.glob('config/environments/*.rb').each do |file|
+      gsub_file file, /^  config.active_record.*$/, '# \0'
+    end
+
+    # Step 3: Remove ActiveRecord from application configuration
+    gsub_file 'config/application.rb', /^require ['"]rails\/all['"]$/, <<-RUBY
+require "action_controller/railtie"
+require "action_view/railtie"
+require "action_mailer/railtie"
+require "active_job/railtie"
+require "action_cable/engine"
+require "rails/test_unit/railtie"
+require "sprockets/railtie" if defined?(Sprockets)
+    RUBY
+
+    # Step 4: Comment out ActiveRecord related lines in cable, storage and database configurations
+    %w[cable storage database].each do |config|
+      File.readlines("config/#{config}.yml").each do |line|
+        gsub_file "config/#{config}.yml", /^#{line.chomp}$/, '# \0'
+      end
+    end
+
+    # Step 5: Comment out ActiveRecord related lines in application record and job
+    gsub_file 'app/models/application_record.rb', /^class ApplicationRecord.*$/, '# \0'
+    gsub_file 'app/jobs/application_job.rb', /^  retry_on ActiveRecord::Deadlocked$/, '# \0'
+
+    # Step 6: Comment out ActiveRecord related lines in setup script
+    gsub_file 'bin/setup', /^  system! "bin\/rails db:prepare"$/, '# \0'
+
+    # Step 7: Remove db directory
+    FileUtils.rm_rf('db')
+
+    # Step 8: Comment out config.active_storage.service in environment files
+    Dir.glob('config/environments/*.rb').each do |file|
+      gsub_file file, /^  config.active_storage.service = :local$/, '# \0'
+    end
+
+    # Step 9: Comment out the Preparing database step in setup script
+    gsub_file 'bin/setup', /^  puts "\n== Preparing database =="$\n  system! "bin\/rails db:prepare"$/, '# \0'
+
+    # Step 10: Comment out every line in test/test_helper.rb
+    File.readlines('test/test_helper.rb').each do |line|
+      gsub_file 'test/test_helper.rb', /^#{line.chomp}$/, '# \0'
+    end
+  end
+
 end
