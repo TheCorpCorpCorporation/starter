@@ -131,6 +131,10 @@ GEM
       ruby2_keywords
     error_highlight (0.5.1)
     erubi (1.12.0)
+    faraday (2.7.10)
+      faraday-net_http (>= 2.0, < 3.1)
+      ruby2_keywords (>= 0.0.4)
+    faraday-net_http (3.0.2)
     ffi (1.15.5)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -276,6 +280,7 @@ DEPENDENCIES
   capybara
   dotenv-rails
   error_highlight (>= 0.4.0)
+  faraday
   hotwire-livereload
   importmap-rails
   jbuilder
