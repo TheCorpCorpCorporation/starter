@@ -101,11 +101,6 @@ require "sprockets/railtie" if defined?(Sprockets)
 
     # Step 9: Comment out the Preparing database step in setup script
     gsub_file 'bin/setup', /^  puts "\n== Preparing database =="$\n  system! "bin\/rails db:prepare"$/, '# \0'
-
-    # Step 10: Comment out every line in test/test_helper.rb
-    File.readlines('test/test_helper.rb').each do |line|
-      gsub_file 'test/test_helper.rb', /^#{line.chomp}$/, '# \0'
-    end
   end
 
 end
